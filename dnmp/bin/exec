@@ -1,0 +1,22 @@
+#!/bin/sh
+
+case "$1" in
+  apache)
+    docker exec -it apache /bin/sh
+    ;;
+  nginx)
+    docker exec -it nginx-proxy /bin/bash
+    ;;
+  php)
+    docker exec -it php /bin/sh
+    ;;
+  mysql)
+    docker exec -it mysql /bin/bash
+    ;;
+  pgsql)
+    docker exec -it postgresql /bin/sh
+    ;;
+  *)
+    docker exec -it $@
+    ;;
+esac

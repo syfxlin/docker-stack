@@ -1,0 +1,104 @@
+version: "3.5"
+services:
+  nginx-proxy:
+    container_name: nginx-proxy
+    image: jc21/nginx-proxy-manager:2
+    ports:
+      - 80:80
+      - 443:443
+      - 81:81
+    volumes:
+      - ./services/nginx-proxy/config.json:/app/config/production.json
+      - ./services/nginx-proxy/data:/data
+      - ./services/nginx-proxy/letsencrypt:/etc/letsencrypt
+      # share
+      - ./share:/share
+    restart: on-failure
+
+  apache:
+    container_name: apache
+    build:
+      context: ./services/apache
+      args:
+        APACHE_VERSION: ${APACHE_VERSION}
+        CONTAINER_PACKAGE_URL: ${CONTAINER_PACKAGE_URL}
+    volumes:
+      # root & logs
+      - ./web:/data/wwwroot
+      - ./logs/apache:/data/wwwlogs
+      # apache
+      - ./services/apache/conf/vhost:/usr/local/apache2/conf/vhost
+      - ./services/apache/conf/httpd.conf:/usr/local/apache2/conf/httpd.conf
+      - ./services/nginx-proxy/letsencrypt:/usr/local/apache2/conf/ssl
+      # vhost-gen
+      - ./services/apache/vhost-gen/conf.yml:/etc/vhost-gen/conf.yml
+      - ./services/apache/vhost-gen/apache24.yml:/etc/vhost-gen/templates/apache24.yml
+      # share
+      - ./share:/share
+    environment:
+      ENABLE_CRONTAB: "true"
+      TZ: ${TZ}
+    restart: on-failure
+
+  php:
+    container_name: php
+    build:
+      context: ./services/php
+      args:
+        PHP_VERSION: ${PHP_VERSION}
+        PHP_EXTENSIONS: ${PHP_EXTENSIONS}
+        TZ: "$TZ"
+        CONTAINER_PACKAGE_URL: ${CONTAINER_PACKAGE_URL}
+    expose:
+      - 9501
+    volumes:
+      # root
+      - ./web:/data/wwwroot
+      # conf
+      - ./services/php/php.ini:/usr/local/etc/php/php.ini
+      - ./services/php/php-fpm.conf:/usr/local/etc/php-fpm.d/www.conf
+      # log
+      - ./logs/php:/var/log/php
+      # data
+      - ./data/composer:/tmp/composer
+      # share
+      - ./share:/share
+    restart: on-failure
+    cap_add:
+      - SYS_PTRACE
+
+  mysql:
+    container_name: mysql
+    image: ${MYSQL_VERSION}
+    ports:
+      - "${MYSQL_HOST_PORT}:3306"
+    volumes:
+      - ./services/mysql/mysql.cnf:/etc/mysql/conf.d/mysql.cnf
+      - ./data/mysql:/var/lib/mysql
+      # share
+      - ./share:/share
+    environment:
+      MYSQL_ROOT_PASSWORD: "${MYSQL_ROOT_PASSWORD}"
+      MYSQL_ROOT_HOST: "%"
+      TZ: "$TZ"
+    restart: on-failure
+
+  postgresql:
+    container_name: postgresql
+    image: ${POSTGRESQL_VERSION}
+    ports:
+      - "${POSTGRESQL_HOST_PORT}:5432"
+    volumes:
+      - ./services/postgresql/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./data/postgresql:/var/lib/postgresql/data
+      # share
+      - ./share:/share
+    restart: on-failure
+    environment:
+      POSTGRES_PASSWORD: "${POSTGRESQL_PASSWORD}"
+      TZ: "$TZ"
+    command: postgres -c 'config_file=/etc/postgresql/postgresql.conf'
+
+networks:
+  default:
+    name: dnmp

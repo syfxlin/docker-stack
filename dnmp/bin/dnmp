@@ -1,0 +1,33 @@
+#!/bin/sh
+
+DNMP_DIR="/mnt/data/docker/dnmp"
+
+case "$1" in
+  start)
+    docker-compose --project-directory $DNMP_DIR start
+    ;;
+  stop)
+    docker-compose --project-directory $DNMP_DIR stop
+    ;;
+  restart)
+    docker-compose --project-directory $DNMP_DIR restart
+    ;;
+  reup)
+    docker-compose --project-directory $DNMP_DIR down && docker-compose --project-directory $DNMP_DIR build && docker-compose --project-directory $DNMP_DIR up -d
+    ;;
+  down)
+    docker-compose --project-directory $DNMP_DIR down
+    ;;
+  up)
+    docker-compose --project-directory $DNMP_DIR up -d
+    ;;
+  ufw)
+    ufw-docker allow nginx-proxy && ufw-docker allow mysql && ufw-docker allow postgresql
+    ;;
+  reload)
+    docker-compose --project-directory $DNMP_DIR restart apache nginx-proxy
+    ;;
+  *)
+    docker-compose --project-directory $DNMP_DIR $@
+    ;;
+esac
