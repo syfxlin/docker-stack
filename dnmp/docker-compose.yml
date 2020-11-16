@@ -1,18 +1,32 @@
 version: "3.5"
 services:
-  nginx-proxy:
-    container_name: nginx-proxy
-    image: jc21/nginx-proxy-manager:2
+  nginx:
+    container_name: nginx
+    build:
+      context: ./services/nginx
+      args:
+        NGINX_VERSION: ${NGINX_VERSION}
+        CONTAINER_PACKAGE_URL: ${CONTAINER_PACKAGE_URL}
     ports:
       - 80:80
       - 443:443
-      - 81:81
+      - 443:443/udp
     volumes:
-      - ./services/nginx-proxy/config.json:/app/config/production.json
-      - ./services/nginx-proxy/data:/data
-      - ./services/nginx-proxy/letsencrypt:/etc/letsencrypt
+      # root & logs
+      - ./web:/data/wwwroot
+      - ./logs/nginx:/var/log/nginx
+      # nginx
+      - ./services/nginx/nginx.conf:/etc/nginx/nginx.conf
+      - ./services/nginx/conf.d:/etc/nginx/conf.d
+      - ./services/ssl:/etc/letsencrypt
+      # vhost-gen
+      - ./services/nginx/vhost-gen/conf.yml:/etc/vhost-gen/conf.yml
+      - ./services/nginx/vhost-gen/nginx.yml:/etc/vhost-gen/templates/nginx.yml
       # share
       - ./share:/share
+    environment:
+      ENABLE_CRONTAB: "true"
+      TZ: ${TZ}
     restart: on-failure
 
   apache:
@@ -25,11 +39,11 @@ services:
     volumes:
       # root & logs
       - ./web:/data/wwwroot
-      - ./logs/apache:/data/wwwlogs
+      - ./logs/apache:/var/log/nginx
       # apache
-      - ./services/apache/conf/vhost:/usr/local/apache2/conf/vhost
-      - ./services/apache/conf/httpd.conf:/usr/local/apache2/conf/httpd.conf
-      - ./services/nginx-proxy/letsencrypt:/usr/local/apache2/conf/ssl
+      - ./services/apache/httpd.conf:/usr/local/apache2/conf/httpd.conf
+      - ./services/apache/conf.d:/usr/local/apache2/conf/vhost
+      - ./services/ssl:/usr/local/apache2/conf/ssl
       # vhost-gen
       - ./services/apache/vhost-gen/conf.yml:/etc/vhost-gen/conf.yml
       - ./services/apache/vhost-gen/apache24.yml:/etc/vhost-gen/templates/apache24.yml

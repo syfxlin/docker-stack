@@ -46,12 +46,12 @@
 # server: apache22
 # server: apache24
 # server: nginx
-server: apache24
+server: nginx
 
 # Where to store the generated configuration files.
 # This must be a directory the web server will read
 # configuration files from.
-conf_dir: /usr/local/apache2/conf/vhost
+conf_dir: /etc/nginx/conf.d
 
 # Custom directive
 # Everything specified here will be directly replaced
@@ -91,9 +91,9 @@ vhost:
   # SSL Definition
   ssl:
     http2: True
-    dir_crt: /usr/local/apache2/conf/ssl/live
-    dir_key: /usr/local/apache2/conf/ssl/live
-    protocols: "TLSv1 TLSv1.1 TLSv1.2"
+    dir_crt: /etc/letsencrypt/live
+    dir_key: /etc/letsencrypt/live
+    protocols: "TLSv1.2 TLSv1.3"
     honor_cipher_order: "off"
     ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-SHA"
 
@@ -128,10 +128,10 @@ vhost:
     # Also define if the directory should be created or not.
     dir:
       create: yes
-      path: /usr/local/apache2/logs
+      path: /var/log/nginx
   # Enable PHP-FPM
   php_fpm:
-    enable: yes
+    enable: no
     # Hostname or IP address
     address: php
     port: 9000

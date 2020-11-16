@@ -1,5 +1,5 @@
-ARG APACHE_VERSION
-FROM ${APACHE_VERSION}
+ARG NGINX_VERSION
+FROM ${NGINX_VERSION}
 
 ARG CONTAINER_PACKAGE_URL
 
@@ -15,5 +15,7 @@ COPY ./vhost-gen/vhost-gen.py /usr/bin/vhost-gen
 
 RUN chmod +x /usr/bin/vhost-gen
 
+RUN apk --no-cache add certbot certbot-nginx
+
 VOLUME ["/data/wwwroot"]
-VOLUME ["/usr/local/apache2/conf/vhost", "/usr/local/apache2/conf/ssl", "/usr/local/apache2/logs"]
+VOLUME ["/etc/nginx/ssl", "/etc/nginx/conf.d", "/var/log/nginx"]

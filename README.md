@@ -10,12 +10,12 @@
 
 本项目的 DNMP 包含了以下容器：
 
-- Nginx：负责反向代理所有容器站点
+- Nginx：负责反向代理所有容器站点，也可以运行静态站点，按需求配置
 - Apache：负责运行静态和 PHP 站点
 - PHP-FPM：负责运行 PHP 程序，同时支持运行 Swoole。
 - MySQL & PostgreSQL：数据库
 
-容器中服务的配置都存储于 `service` 文件夹中，数据都存储于 `data` 文件夹中，日志大部分都存储于 `logs` 和 `web/wwwlogs` 下，`web/wwwroot` 为网站目录，`share` 为所有容器中的共享目录，如果有需要在各容器中或宿主机中共享文件或文件夹，可以存储于该文件夹。
+容器中服务的配置都存储于 `service` 文件夹中，数据都存储于 `data` 文件夹中，日志都存储于 `logs` 下，`web/wwwroot` 为网站目录，`share` 为所有容器中的共享目录，如果有需要在各容器中或宿主机中共享文件或文件夹，可以存储于该文件夹。
 
 #### 启动
 
@@ -24,29 +24,51 @@
 
 #### 配置
 
-Nginx 反向代理使用的是 [jc21/nginx-proxy-manager](https://github.com/jc21/nginx-proxy-manager)，打开 `http://<you_host>:81` 进入 NPM 面板进行配置。具体请查阅 [jc21/nginx-proxy-manager](https://github.com/jc21/nginx-proxy-manager) 相关文档。
+Apache 和 Nginx 配置使用 [devilbox/vhost-gen](https://github.com/devilbox/vhost-gen)，具体命令见下方：
 
-Apache 配置使用 [devilbox/vhost-gen](https://github.com/devilbox/vhost-gen)，具体命令见下方：
+- 创建静态站点（Nginx，HttpOnly）
 
-1. 创建 Http Only 站点
 ```shell script
-bin/vhost-gen -p /data/wwwroot/<you_host> -n <you_host> -s
+bin/nginx-vg -p /data/wwwroot/<you_host> -n <you_host> -s
+docker restart nginx
 ```
-2. 创建 Https 和 Http 站点
+
+- 创建 PHP 站点（Apache，HttpOnly）
+
 ```shell script
-# 首先先创建一个 Http Only 站点
-bin/vhost-gen -p /data/wwwroot/<you_host> -n <you_host> -s
-
-# 然后到 Nginx-Proxy-Manager 面板中添加站点，确保站点能通过 Http 被访问到
-# 接着在 Nginx-Proxy-Manager 面板中配置站点的 SSL 证书，确保站点能通过 Http 被访问到
-
-# 如果你的应用程序不需要源站点也是 Https，那么此时就可以不用进行下一步操作了
-# 如果你的应用程序需要 Https，比如 Laravel，那么你就需要为 apache 生成 Https 的配置文件
-bin/vhost-gen -p /data/wwwroot/<you_host> -n <you_host> -s -m npm-<id>
-# ID 请打开 NPM 面板进到 Proxy Hosts 页面，通过浏览器的开发工具，找到 /api/nginx/proxy-hosts 的请求记录，里面有站点的详细信息。
-
-# 最后重启下 apache，使配置生效
+bin/apache-vg -p /data/wwwroot/<you_host> -n <you_host> -s
+bin/nginx-vg -r http://apache:80 -l / -s
 docker restart apache
+docker restart nginx
+```
+
+- 创建 Https 站点（Nginx，Https）
+
+```shell script
+# 先创建一个临时的 Http 站点用于申请 ssl 证书
+bin/nginx-vg -p /data/wwwroot/<you_host> -n <you_host> -s
+docker restart nginx
+# 申请 ssl 证书
+bin/certbot certonly --nginx
+# 将站点升级为 Https
+bin/nginx-vg -p /data/wwwroot/<you_host> -n <you_host> -s -m let
+docker restart nginx
+```
+
+- 创建 Http 站点（Apache，Https）
+
+```shell script
+# 先创建一个临时的 Http 站点用于申请 ssl 证书
+bin/nginx-vg -p /data/wwwroot/<you_host> -n <you_host> -s
+docker restart nginx
+# 申请 ssl 证书
+bin/certbot certonly --nginx
+# 创建 Apache 站点
+bin/apache-vg -p /data/wwwroot/<you_host> -n <you_host> -s -m let
+# 将 Nginx 反代升级为 Https
+bin/nginx-vg -r https://apache:443 -s -m let
+docker restart apache
+docker restart nginx
 ```
 
 数据库密码，各种服务的版本，PHP 插件等配置修改 `.env` 文件中的环境变量即可。
