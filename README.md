@@ -37,7 +37,7 @@ docker restart nginx
 
 ```shell script
 bin/apache-vg -p /data/wwwroot/<you_host> -n <you_host> -s
-bin/nginx-vg -r http://apache:80 -l / -s
+bin/nginx-vg -r http://apache:80 -n <you_host> -l / -s
 docker restart apache
 docker restart nginx
 ```
@@ -66,7 +66,7 @@ bin/certbot certonly --nginx
 # 创建 Apache 站点
 bin/apache-vg -p /data/wwwroot/<you_host> -n <you_host> -s -m let
 # 将 Nginx 反代升级为 Https
-bin/nginx-vg -r https://apache:443 -s -m let
+bin/nginx-vg -r https://apache:443 -n <you_host> -s -m let
 docker restart apache
 docker restart nginx
 ```
