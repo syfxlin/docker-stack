@@ -91,8 +91,8 @@ vhost:
   # SSL Definition
   ssl:
     http2: True
-    dir_crt: /etc/letsencrypt/live
-    dir_key: /etc/letsencrypt/live
+    dir_crt: /root/.acme.sh/
+    dir_key: /root/.acme.sh/
     protocols: "TLSv1.2 TLSv1.3"
     honor_cipher_order: "off"
     ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-SHA"

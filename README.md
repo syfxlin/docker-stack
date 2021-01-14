@@ -15,7 +15,8 @@
 - PHP-FPM：负责运行 PHP 程序，同时支持运行 Swoole。
 - MySQL & PostgreSQL：数据库
 
-容器中服务的配置都存储于 `service` 文件夹中，数据都存储于 `data` 文件夹中，日志都存储于 `logs` 下，`web/wwwroot` 为网站目录，`share` 为所有容器中的共享目录，如果有需要在各容器中或宿主机中共享文件或文件夹，可以存储于该文件夹。
+容器中服务的配置都存储于 `service` 文件夹中，数据都存储于 `data` 文件夹中，日志都存储于 `logs` 下，`web/wwwroot` 为网站目录，`share`
+为所有容器中的共享目录，如果有需要在各容器中或宿主机中共享文件或文件夹，可以存储于该文件夹。
 
 #### 启动
 
@@ -28,14 +29,14 @@ Apache 和 Nginx 配置使用 [devilbox/vhost-gen](https://github.com/devilbox/v
 
 - 创建静态站点（Nginx，HttpOnly）
 
-```shell script
+```shell
 bin/nginx-vg -p /data/wwwroot/<you_host> -n <you_host> -s
 docker restart nginx
 ```
 
 - 创建 PHP 站点（Apache，HttpOnly）
 
-```shell script
+```shell
 bin/apache-vg -p /data/wwwroot/<you_host> -n <you_host> -s
 bin/nginx-vg -r http://apache:80 -l / -s
 docker restart apache
@@ -44,29 +45,58 @@ docker restart nginx
 
 - 创建 Https 站点（Nginx，Https）
 
-```shell script
+使用文件验证方法
+
+```shell
 # 先创建一个临时的 Http 站点用于申请 ssl 证书
 bin/nginx-vg -p /data/wwwroot/<you_host> -n <you_host> -s
 docker restart nginx
-# 申请 ssl 证书
-bin/certbot certonly --nginx
+# 申请 ssl 证书（使用文件验证方法）
+bin/acme --issue -d <you_host> --webroot /data/wwwroot/<you_host>
 # 将站点升级为 Https
 bin/nginx-vg -p /data/wwwroot/<you_host> -n <you_host> -s -m let
 docker restart nginx
 ```
 
-- 创建 Http 站点（Apache，Https）
+使用 DNS 验证方法（DNSPod 为例）
 
-```shell script
+```shell
+# 修改 .env 下的 DP_ID, DP_KEY 这是对应 DNS 提供商的 API，按 ACME 的文档进行设置
+# 申请 ssl 证书
+bin/acme --issue --dns dns_dp -d <you_host>
+# 创建 Nginx 反代或者静态站点
+bin/nginx-vg -p /data/wwwroot/lincdn.top -n lincdn.top -m let -s
+bin/nginx-vg -r <proxy_url> -n <you_host> -m let -l / -s
+docker restart nginx
+```
+
+- 创建 Https 站点（Apache，Https）
+
+使用文件验证方法
+
+```shell
 # 先创建一个临时的 Http 站点用于申请 ssl 证书
 bin/nginx-vg -p /data/wwwroot/<you_host> -n <you_host> -s
 docker restart nginx
-# 申请 ssl 证书
-bin/certbot certonly --nginx
+# 申请 ssl 证书（使用文件验证方法）
+bin/acme --issue -d <you_host> --webroot /data/wwwroot/<you_host>
 # 创建 Apache 站点
 bin/apache-vg -p /data/wwwroot/<you_host> -n <you_host> -s -m let
 # 将 Nginx 反代升级为 Https
-bin/nginx-vg -r https://apache:443 -s -m let
+bin/nginx-vg -r https://apache:443 -l / -s -m let
+docker restart apache
+docker restart nginx
+```
+
+使用 DNS 验证方法（DNSPod 为例）
+
+```shell
+# 修改 .env 下的 DP_ID, DP_KEY 这是对应 DNS 提供商的 API，按 ACME 的文档进行设置
+# 申请 ssl 证书
+bin/acme --issue --dns dns_dp -d <you_host>
+# 创建 Nginx 反代和 Apache 站点
+bin/nginx-vg -r https://apache:443 -n <you_host> -m let -l / -s
+bin/apache-vg -p /data/wwwroot/<you_host> -n <you_host> -m let -s
 docker restart apache
 docker restart nginx
 ```
@@ -89,7 +119,8 @@ networks:
 
 ## 维护者 Maintainer
 
-docker-stack 由 [Otstar Lin](https://ixk.me/) 和下列 [贡献者](https://github.com/syfxlin/docker-stack/graphs/contributors) 的帮助下撰写和维护。
+docker-stack 由 [Otstar Lin](https://ixk.me/)
+和下列 [贡献者](https://github.com/syfxlin/docker-stack/graphs/contributors) 的帮助下撰写和维护。
 
 > Otstar Lin - [Personal Website](https://ixk.me/) · [Blog](https://blog.ixk.me/) · [Github](https://github.com/syfxlin)
 

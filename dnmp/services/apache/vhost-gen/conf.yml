@@ -91,8 +91,8 @@ vhost:
   # SSL Definition
   ssl:
     http2: True
-    dir_crt: /usr/local/apache2/conf/ssl/live
-    dir_key: /usr/local/apache2/conf/ssl/live
+    dir_crt: /usr/local/apache2/conf/ssl
+    dir_key: /usr/local/apache2/conf/ssl
     protocols: "TLSv1 TLSv1.1 TLSv1.2"
     honor_cipher_order: "off"
     ciphers: "ECDHE-ECDSA-AES128-GCM-SHA256:ECDHE-RSA-AES128-GCM-SHA256:ECDHE-ECDSA-AES256-GCM-SHA384:ECDHE-RSA-AES256-GCM-SHA384:ECDHE-ECDSA-CHACHA20-POLY1305:ECDHE-RSA-CHACHA20-POLY1305:DHE-RSA-AES128-GCM-SHA256:DHE-RSA-AES256-GCM-SHA384:ECDHE-RSA-AES128-SHA"

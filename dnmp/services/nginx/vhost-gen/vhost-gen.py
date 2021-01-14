@@ -85,11 +85,11 @@ def print_help():
     Usage: vhost-gen -p|r <str> -n <str> [-l <str> -c <str> -t <str> -o <str> -d -s -v]
        vhost-gen --help
        vhost-gen --version
-    
+
     vhost-gen will dynamically generate vhost configuration files
     for Nginx, Apache 2.2 or Apache 2.4 depending on what you have set
     in /etc/vhost-gen/conf.yml
-    
+
     Required arguments:
     -p|r <str>  You need to choose one of the mutually exclusive arguments.
               -p: Path to document root/
@@ -102,7 +102,7 @@ def print_help():
               Note, this is not required for normal document root server (-p)
     -n <str>    Name of vhost
               Note, this can also have a prefix and/or suffix to be set in conf.yml
-    
+
     Optional arguments:
     -m <str>    Vhost generation mode. Possible values are:
               -m plain: Only generate http version (default)
@@ -129,7 +129,7 @@ def print_help():
     -s          If specified, the generated vhost will be saved in the location found in
               conf.yml. If not specified, vhost will be printed to stdout.
     -v          Be verbose.
-    
+
     Misc arguments:
     --help      Show this help.
     --version   Show version.
@@ -594,7 +594,7 @@ def vhost_get_ssl_crt_path(config, server_name, let):
     suffix = to_str(config["vhost"]["name"]["suffix"])
     name = prefix + server_name + suffix
     if let:
-        name = os.path.join(name, "fullchain.pem")
+        name = os.path.join(name, "fullchain.cer")
     else:
         name += ".crt"
 
@@ -608,7 +608,7 @@ def vhost_get_ssl_key_path(config, server_name, let):
     suffix = to_str(config["vhost"]["name"]["suffix"])
     name = prefix + server_name + suffix
     if let:
-        name = os.path.join(name, "privkey.pem")
+        name = os.path.join(name, name + ".key")
     else:
         name += ".key"
 

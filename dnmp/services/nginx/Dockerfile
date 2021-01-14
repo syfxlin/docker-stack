@@ -15,7 +15,7 @@ COPY ./vhost-gen/vhost-gen.py /usr/bin/vhost-gen
 
 RUN chmod +x /usr/bin/vhost-gen
 
-RUN apk --no-cache add certbot certbot-nginx
+RUN apk --no-cache add curl openssl socat && curl https://get.acme.sh | sh
 
 VOLUME ["/data/wwwroot"]
 VOLUME ["/etc/nginx/ssl", "/etc/nginx/conf.d", "/var/log/nginx"]

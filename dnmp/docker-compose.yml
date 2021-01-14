@@ -18,7 +18,7 @@ services:
       # nginx
       - ./services/nginx/nginx.conf:/etc/nginx/nginx.conf
       - ./services/nginx/conf.d:/etc/nginx/conf.d
-      - ./services/ssl:/etc/letsencrypt
+      - ./services/ssl:/root/.acme.sh/
       # vhost-gen
       - ./services/nginx/vhost-gen/conf.yml:/etc/vhost-gen/conf.yml
       - ./services/nginx/vhost-gen/nginx.yml:/etc/vhost-gen/templates/nginx.yml
@@ -27,6 +27,8 @@ services:
     environment:
       ENABLE_CRONTAB: "true"
       TZ: ${TZ}
+      DP_Id: ${DP_ID}
+      DP_Key: ${DP_KEY}
     restart: on-failure
 
   apache:
