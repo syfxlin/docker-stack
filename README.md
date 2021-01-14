@@ -38,7 +38,7 @@ docker restart nginx
 
 ```shell
 bin/apache-vg -p /data/wwwroot/<you_host> -n <you_host> -s
-bin/nginx-vg -r http://apache:80 -l / -s
+bin/nginx-vg -r http://apache:80 -n <you_host> -l / -s
 docker restart apache
 docker restart nginx
 ```
@@ -83,7 +83,7 @@ bin/acme --issue -d <you_host> --webroot /data/wwwroot/<you_host>
 # 创建 Apache 站点
 bin/apache-vg -p /data/wwwroot/<you_host> -n <you_host> -s -m let
 # 将 Nginx 反代升级为 Https
-bin/nginx-vg -r https://apache:443 -l / -s -m let
+bin/nginx-vg -r https://apache:443 -n <you_host> -l / -s -m let
 docker restart apache
 docker restart nginx
 ```
